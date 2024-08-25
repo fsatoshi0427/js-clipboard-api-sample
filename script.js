@@ -4,17 +4,24 @@ async function getClipBoardAsBin(){
     for(const item of items){
         const itemret = {}
         for(const type of item.types){
-            const hexstr = await item.getType(type)
+            const data = await item.getType(type)
                 .then(blob => blob.arrayBuffer())
-                .then(ab => "0x" + ab.map(e => e.toString(16).padStart(2,"0")).join(""))
-            itemret[type] = hexstr
+                .then(ab => {
+                    const hexortext = document.querySelector("#hexortext").value;
+                    if(hexortext == "hex"){
+                        return [...new Uint8Array(ab)].map(e => e.toString(16).padStart(2,"0")).join("")
+                    }else if(hexortext == "text"){
+                        return new TextDecoder().decode(ab)
+                    }
+                })
+            itemret[type] = data
         }
         ret.push(itemret)
     }
     return ret
 }
 
-function onclick(){
+function onclickf(){
     getClipBoardAsBin()
     .then(e => document.querySelector("#result").value = JSON.stringify(e,null,"\t"))
 }
